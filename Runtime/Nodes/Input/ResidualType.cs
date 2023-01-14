@@ -1,7 +1,10 @@
-﻿public enum ResidualType
+﻿namespace Terrain_Graph
 {
-    Mean,
-    Difference,
-    Deviation,
-    Percentile
+    public enum ResidualType
+    {
+        Mean,
+        Difference,
+        Deviation,
+        Percentile
+    }
 }

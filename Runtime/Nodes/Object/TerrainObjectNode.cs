@@ -1,4 +1,7 @@
-﻿public abstract class TerrainObjectNode : TerrainNode
+﻿namespace Terrain_Graph
 {
+    public abstract class TerrainObjectNode : TerrainNode
+    {
 
+    }
 }

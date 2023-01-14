@@ -1,11 +1,14 @@
-﻿public enum MathOperation
+﻿namespace Terrain_Graph
 {
-    Add,
-    Subtract,
-    Multiply,
-    Divide,
-    Modulo,
-    Pow,
-    Min,
-    Max
+    public enum MathOperation
+    {
+        Add,
+        Subtract,
+        Multiply,
+        Divide,
+        Modulo,
+        Pow,
+        Min,
+        Max
+    }
 }

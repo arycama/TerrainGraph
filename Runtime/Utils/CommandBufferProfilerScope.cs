@@ -1,20 +1,23 @@
 ﻿using System;
 using UnityEngine.Rendering;
 
-public readonly struct CommandBufferProfilerScope : IDisposable
+namespace Terrain_Graph
 {
-    private readonly CommandBuffer commandBuffer;
-    private readonly string name;
-
-    public CommandBufferProfilerScope(CommandBuffer commandBuffer, string name)
+    public readonly struct CommandBufferProfilerScope : IDisposable
     {
-        this.commandBuffer = commandBuffer;
-        this.name = name;
-        commandBuffer.BeginSample(name);
-    }
+        private readonly CommandBuffer commandBuffer;
+        private readonly string name;
 
-    void IDisposable.Dispose()
-    {
-        commandBuffer.EndSample(name);
+        public CommandBufferProfilerScope(CommandBuffer commandBuffer, string name)
+        {
+            this.commandBuffer = commandBuffer;
+            this.name = name;
+            commandBuffer.BeginSample(name);
+        }
+
+        void IDisposable.Dispose()
+        {
+            commandBuffer.EndSample(name);
+        }
     }
 }

@@ -1,21 +1,24 @@
-﻿using UnityEngine.Rendering;
-using NodeGraph;
+﻿using NodeGraph;
+using UnityEngine.Rendering;
 
-public abstract class TerrainNode : BaseNode
+namespace Terrain_Graph
 {
-    protected float GetConnectionMin(string fieldName)
+    public abstract class TerrainNode : BaseNode
     {
-        var node = GetConnectedNode(fieldName) as TerrainInputNode;
-        return node != null ? node.Min : 0;
+        protected float GetConnectionMin(string fieldName)
+        {
+            var node = GetConnectedNode(fieldName) as TerrainInputNode;
+            return node != null ? node.Min : 0;
+        }
+
+        protected float GetConnectionMax(string fieldName)
+        {
+            var node = GetConnectedNode(fieldName) as TerrainInputNode;
+            return node != null ? node.Max : 1;
+        }
+
+        public abstract void Process(TerrainGraph graph, CommandBuffer command);
+
+        public virtual void OnFinishProcess(TerrainGraph graph, CommandBuffer command) { }
     }
-
-    protected float GetConnectionMax(string fieldName)
-    {
-        var node = GetConnectedNode(fieldName) as TerrainInputNode;
-        return node != null ? node.Max : 1;
-    }
-
-    public abstract void Process(TerrainGraph graph, CommandBuffer command);
-
-    public virtual void OnFinishProcess(TerrainGraph graph, CommandBuffer command) { }
 }

@@ -1,7 +1,10 @@
 ﻿using UnityEngine.Rendering;
 
-public interface ITerrainRenderer
+namespace Terrain_Graph
 {
-	public RenderTargetIdentifier Heightmap { get; }
-	public RenderTargetIdentifier NormalMap { get; }
+    public interface ITerrainRenderer
+    {
+        public RenderTargetIdentifier Heightmap { get; }
+        public RenderTargetIdentifier NormalMap { get; }
+    }
 }

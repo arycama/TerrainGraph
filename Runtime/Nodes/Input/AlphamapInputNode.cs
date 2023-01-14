@@ -1,25 +1,28 @@
-﻿using UnityEngine;
+﻿using NodeGraph;
+using UnityEngine;
 using UnityEngine.Rendering;
-using NodeGraph;
 
-[NodeMenuItem("Input/Alphamap Input")]
-public partial class AlphamapInputNode : TerrainInputNode
+namespace Terrain_Graph
 {
-    [SerializeField] private TerrainLayer terrainLayer;
-
-    protected override void Generate(TerrainGraph graph, CommandBuffer command)
+    [NodeMenuItem("Input/Alphamap Input")]
+    public partial class AlphamapInputNode : TerrainInputNode
     {
-        var textureManager = graph.ActiveTerrain.GetComponent<ITerrainTextureManager>();
-        if (textureManager == null)
-            return;
+        [SerializeField] private TerrainLayer terrainLayer;
 
-        var input = textureManager.IdMap;
-        var index = textureManager.GetTerrainLayerIndex(terrainLayer);
+        protected override void Generate(TerrainGraph graph, CommandBuffer command)
+        {
+            var textureManager = graph.ActiveTerrain.GetComponent<ITerrainTextureManager>();
+            if (textureManager == null)
+                return;
 
-        var computeShader = Resources.Load<ComputeShader>("AlphamapInputNode");
-        command.SetComputeTextureParam(computeShader, 0, "_TerrainControlMap", input);
-        command.SetComputeTextureParam(computeShader, 0, "_Result", result);
-        command.SetComputeIntParam(computeShader, "_TargetLayer", index);
-        command.DispatchNormalized(computeShader, 0, graph.Resolution, graph.Resolution, 1);
+            var input = textureManager.IdMap;
+            var index = textureManager.GetTerrainLayerIndex(terrainLayer);
+
+            var computeShader = Resources.Load<ComputeShader>("AlphamapInputNode");
+            command.SetComputeTextureParam(computeShader, 0, "_TerrainControlMap", input);
+            command.SetComputeTextureParam(computeShader, 0, "_Result", result);
+            command.SetComputeIntParam(computeShader, "_TargetLayer", index);
+            command.DispatchNormalized(computeShader, 0, graph.Resolution, graph.Resolution, 1);
+        }
     }
 }

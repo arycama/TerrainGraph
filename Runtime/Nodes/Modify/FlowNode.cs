@@ -1,92 +1,95 @@
 ﻿using System;
+using NodeGraph;
 using UnityEngine;
 using UnityEngine.Rendering;
-using NodeGraph;
 
-[NodeMenuItem("Modify/Flow")]
-public partial class FlowNode : TerrainInputNode
+namespace Terrain_Graph
 {
-    [SerializeField, Min(0)] private float amount = 0.0001f;
-    [SerializeField, Range(0f, 1f)] private float time = 0.2f;
-    [SerializeField, Range(1, 512)] private int iterations = 5;
-
-    [Input] private RenderTargetIdentifier input;
-
-    [Output] private RenderTargetIdentifier waterMap;
-    [Output] private RenderTargetIdentifier velocity;
-
-    private int waterMapId, velocityId, outflowId;
-
-    public override void Initialize()
+    [NodeMenuItem("Modify/Flow")]
+    public partial class FlowNode : TerrainInputNode
     {
-        base.Initialize();
+        [SerializeField, Min(0)] private float amount = 0.0001f;
+        [SerializeField, Range(0f, 1f)] private float time = 0.2f;
+        [SerializeField, Range(1, 512)] private int iterations = 5;
 
-        waterMapId = Shader.PropertyToID($"{GetType()}_{GetInstanceID()}_WaterMap");
-        velocityId = Shader.PropertyToID($"{GetType()}_{GetInstanceID()}_Velocity");
-        outflowId = Shader.PropertyToID($"{GetType()}_{GetInstanceID()}_Outflow");
+        [Input] private RenderTargetIdentifier input;
 
-        waterMap = waterMapId;
-        velocity = velocityId;
-    }
+        [Output] private RenderTargetIdentifier waterMap;
+        [Output] private RenderTargetIdentifier velocity;
 
-    protected override void Generate(TerrainGraph graph, CommandBuffer command)
-    {
-        if (!NodeIsConnected("input"))
-            return;
+        private int waterMapId, velocityId, outflowId;
 
-        var waterDescriptor = new RenderTextureDescriptor(graph.Resolution, graph.Resolution, RenderTextureFormat.RFloat)
+        public override void Initialize()
         {
-            enableRandomWrite = true,
-        };
+            base.Initialize();
 
-        var outflowDescriptor = new RenderTextureDescriptor(graph.Resolution, graph.Resolution, RenderTextureFormat.ARGBHalf)
-        {
-            enableRandomWrite = true,
-        };
+            waterMapId = Shader.PropertyToID($"{GetType()}_{GetInstanceID()}_WaterMap");
+            velocityId = Shader.PropertyToID($"{GetType()}_{GetInstanceID()}_Velocity");
+            outflowId = Shader.PropertyToID($"{GetType()}_{GetInstanceID()}_Outflow");
 
-        var velocityDescriptor = new RenderTextureDescriptor(graph.Resolution, graph.Resolution, RenderTextureFormat.RGHalf)
-        {
-            enableRandomWrite = true,
-        };
-
-        command.GetTemporaryRT(waterMapId,waterDescriptor);
-        command.GetTemporaryRT(outflowId, outflowDescriptor);
-        command.GetTemporaryRT(velocityId, velocityDescriptor);
-
-        var computeShader = Resources.Load<ComputeShader>("Modify/FlowNode");
-        command.SetComputeVectorParam(computeShader, "_Scale", graph.ActiveTerrain.terrainData.heightmapScale);
-        command.SetComputeIntParam(computeShader, "_Size", graph.Resolution);
-        command.SetComputeFloatParam(computeShader, "Time", time);
-        command.SetComputeFloatParam(computeShader, "_Height", amount);
-
-        for (var i = 0; i < iterations; i++)
-        {
-            command.SetComputeFloatParam(computeShader, "_First", i == 0 ? 1f : 0f);
-
-            command.SetComputeTextureParam(computeShader, 0, "Input", input);
-            command.SetComputeTextureParam(computeShader, 0, "WaterMap", waterMap);
-            command.SetComputeTextureParam(computeShader, 0, "OutFlow", outflowId);
-            command.DispatchNormalized(computeShader, 0, graph.Resolution, graph.Resolution, 1);
-
-            command.SetComputeTextureParam(computeShader, 1, "Input", input);
-            command.SetComputeTextureParam(computeShader, 1, "WaterMap", waterMap);
-            command.SetComputeTextureParam(computeShader, 1, "OutFlow", outflowId);
-            command.DispatchNormalized(computeShader, 1, graph.Resolution, graph.Resolution, 1);
+            waterMap = waterMapId;
+            velocity = velocityId;
         }
 
-        command.SetComputeTextureParam(computeShader, 2, "OutFlow", outflowId);
-        command.SetComputeTextureParam(computeShader, 2, "_Velocity", velocity);
-        command.SetComputeTextureParam(computeShader, 2, "Result", result);
-        command.DispatchNormalized(computeShader, 2, graph.Resolution, graph.Resolution, 1);
+        protected override void Generate(TerrainGraph graph, CommandBuffer command)
+        {
+            if (!NodeIsConnected("input"))
+                return;
 
-        command.ReleaseTemporaryRT(outflowId);
-    }
+            var waterDescriptor = new RenderTextureDescriptor(graph.Resolution, graph.Resolution, RenderTextureFormat.RFloat)
+            {
+                enableRandomWrite = true,
+            };
 
-    public override void OnFinishProcess(TerrainGraph graph, CommandBuffer command)
-    {
-        base.OnFinishProcess(graph, command);
+            var outflowDescriptor = new RenderTextureDescriptor(graph.Resolution, graph.Resolution, RenderTextureFormat.ARGBHalf)
+            {
+                enableRandomWrite = true,
+            };
 
-        command.ReleaseTemporaryRT(waterMapId);
-        command.ReleaseTemporaryRT(velocityId);
+            var velocityDescriptor = new RenderTextureDescriptor(graph.Resolution, graph.Resolution, RenderTextureFormat.RGHalf)
+            {
+                enableRandomWrite = true,
+            };
+
+            command.GetTemporaryRT(waterMapId, waterDescriptor);
+            command.GetTemporaryRT(outflowId, outflowDescriptor);
+            command.GetTemporaryRT(velocityId, velocityDescriptor);
+
+            var computeShader = Resources.Load<ComputeShader>("Modify/FlowNode");
+            command.SetComputeVectorParam(computeShader, "_Scale", graph.ActiveTerrain.terrainData.heightmapScale);
+            command.SetComputeIntParam(computeShader, "_Size", graph.Resolution);
+            command.SetComputeFloatParam(computeShader, "Time", time);
+            command.SetComputeFloatParam(computeShader, "_Height", amount);
+
+            for (var i = 0; i < iterations; i++)
+            {
+                command.SetComputeFloatParam(computeShader, "_First", i == 0 ? 1f : 0f);
+
+                command.SetComputeTextureParam(computeShader, 0, "Input", input);
+                command.SetComputeTextureParam(computeShader, 0, "WaterMap", waterMap);
+                command.SetComputeTextureParam(computeShader, 0, "OutFlow", outflowId);
+                command.DispatchNormalized(computeShader, 0, graph.Resolution, graph.Resolution, 1);
+
+                command.SetComputeTextureParam(computeShader, 1, "Input", input);
+                command.SetComputeTextureParam(computeShader, 1, "WaterMap", waterMap);
+                command.SetComputeTextureParam(computeShader, 1, "OutFlow", outflowId);
+                command.DispatchNormalized(computeShader, 1, graph.Resolution, graph.Resolution, 1);
+            }
+
+            command.SetComputeTextureParam(computeShader, 2, "OutFlow", outflowId);
+            command.SetComputeTextureParam(computeShader, 2, "_Velocity", velocity);
+            command.SetComputeTextureParam(computeShader, 2, "Result", result);
+            command.DispatchNormalized(computeShader, 2, graph.Resolution, graph.Resolution, 1);
+
+            command.ReleaseTemporaryRT(outflowId);
+        }
+
+        public override void OnFinishProcess(TerrainGraph graph, CommandBuffer command)
+        {
+            base.OnFinishProcess(graph, command);
+
+            command.ReleaseTemporaryRT(waterMapId);
+            command.ReleaseTemporaryRT(velocityId);
+        }
     }
 }

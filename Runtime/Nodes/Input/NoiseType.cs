@@ -1,6 +1,9 @@
-﻿public enum NoiseType
+﻿namespace Terrain_Graph
 {
-    Simplex,
-    Worley,
-    Perlin
+    public enum NoiseType
+    {
+        Simplex,
+        Worley,
+        Perlin
+    }
 }

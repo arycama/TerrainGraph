@@ -1,6 +1,9 @@
-﻿public enum FractalType
+﻿namespace Terrain_Graph
 {
-    Fbm,
-    Billow,
-    Ridged
+    public enum FractalType
+    {
+        Fbm,
+        Billow,
+        Ridged
+    }
 }

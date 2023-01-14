@@ -1,69 +1,72 @@
+using NodeGraph;
 using UnityEngine;
 using UnityEngine.Rendering;
-using NodeGraph;
 
-public partial class TextureOutputTerrainNode : TerrainNode
+namespace Terrain_Graph
 {
-    [SerializeField] private string textureId = string.Empty;
-    [SerializeField] private RenderTextureFormat format = RenderTextureFormat.RFloat;
-    [SerializeField, Tooltip("Sets this keyword to 1 when generated")] private string shaderKeyword;
-
-    [Input] protected RenderTexture input = null;
-
-    private RenderTexture result;
-
-    public float Min { get; private set; }
-    public float Max { get; private set; }
-
-    public RenderTexture Result => result;
-
-    private void OnEnable()
+    public partial class TextureOutputTerrainNode : TerrainNode
     {
-        var resolution = 1025;
-        var resultDescriptor = new RenderTextureDescriptor(resolution, resolution, format)
-        {
-            enableRandomWrite = true,
-        };
+        [SerializeField] private string textureId = string.Empty;
+        [SerializeField] private RenderTextureFormat format = RenderTextureFormat.RFloat;
+        [SerializeField, Tooltip("Sets this keyword to 1 when generated")] private string shaderKeyword;
 
-        result = new RenderTexture(resultDescriptor)
-        {
-            hideFlags = HideFlags.HideAndDontSave,
-        }.Created();
-    }
+        [Input] protected RenderTexture input = null;
 
-    private void OnDisable()
-    {
-        DestroyImmediate(result);
-    }
+        private RenderTexture result;
 
-    public override void Process(TerrainGraph graph, CommandBuffer command)
-    {
-        if(!string.IsNullOrEmpty(shaderKeyword))
+        public float Min { get; private set; }
+        public float Max { get; private set; }
+
+        public RenderTexture Result => result;
+
+        private void OnEnable()
         {
-            Shader.SetGlobalFloat(shaderKeyword, 1f);
+            var resolution = 1025;
+            var resultDescriptor = new RenderTextureDescriptor(resolution, resolution, format)
+            {
+                enableRandomWrite = true,
+            };
+
+            result = new RenderTexture(resultDescriptor)
+            {
+                hideFlags = HideFlags.HideAndDontSave,
+            }.Created();
         }
 
-        if (input == null)
-            return;
-
-        var res = graph.Resolution;
-        result.Resize(res, res);
-
-        if(result.format != format)
+        private void OnDisable()
         {
-            result.Release();
-            result.format = format;
-            result.Create();
+            DestroyImmediate(result);
         }
 
-        Min = GetConnectionMin("input");
-        Max = GetConnectionMax("input");
-        Graphics.CopyTexture(input, 0, 0, result, 0, 0);
+        public override void Process(TerrainGraph graph, CommandBuffer command)
+        {
+            if (!string.IsNullOrEmpty(shaderKeyword))
+            {
+                Shader.SetGlobalFloat(shaderKeyword, 1f);
+            }
 
-        Shader.SetGlobalTexture(textureId, result);
-    }
+            if (input == null)
+                return;
 
-    public override void OnFinishProcess(TerrainGraph graph, CommandBuffer command)
-    {
+            var res = graph.Resolution;
+            result.Resize(res, res);
+
+            if (result.format != format)
+            {
+                result.Release();
+                result.format = format;
+                result.Create();
+            }
+
+            Min = GetConnectionMin("input");
+            Max = GetConnectionMax("input");
+            Graphics.CopyTexture(input, 0, 0, result, 0, 0);
+
+            Shader.SetGlobalTexture(textureId, result);
+        }
+
+        public override void OnFinishProcess(TerrainGraph graph, CommandBuffer command)
+        {
+        }
     }
 }

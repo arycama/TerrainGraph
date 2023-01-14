@@ -1,6 +1,9 @@
-﻿public enum SamplingMode
+﻿namespace Terrain_Graph
 {
-    Point,
-    Bilinear,
-    Bicubic
+    public enum SamplingMode
+    {
+        Point,
+        Bilinear,
+        Bicubic
+    }
 }

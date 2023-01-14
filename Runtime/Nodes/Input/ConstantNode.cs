@@ -1,22 +1,25 @@
-﻿using UnityEngine;
+﻿using NodeGraph;
+using UnityEngine;
 using UnityEngine.Rendering;
-using NodeGraph;
 
-[NodeMenuItem("Input/Constant")]
-public partial class ConstantNode : TerrainInputNode
+namespace Terrain_Graph
 {
-    [SerializeField]
-    private float value = 0;
-
-    public override float Min => value;
-
-    public override float Max => value;
-
-    protected override void Generate(TerrainGraph graph, CommandBuffer command)
+    [NodeMenuItem("Input/Constant")]
+    public partial class ConstantNode : TerrainInputNode
     {
-        var computeShader = Resources.Load<ComputeShader>("ConstantNode");
-        command.SetComputeFloatParam(computeShader, "Value", value);
-        command.SetComputeTextureParam(computeShader, 0, "Result", result);
-        command.DispatchNormalized(computeShader, 0, graph.Resolution, graph.Resolution, 1);
+        [SerializeField]
+        private float value = 0;
+
+        public override float Min => value;
+
+        public override float Max => value;
+
+        protected override void Generate(TerrainGraph graph, CommandBuffer command)
+        {
+            var computeShader = Resources.Load<ComputeShader>("ConstantNode");
+            command.SetComputeFloatParam(computeShader, "Value", value);
+            command.SetComputeTextureParam(computeShader, 0, "Result", result);
+            command.DispatchNormalized(computeShader, 0, graph.Resolution, graph.Resolution, 1);
+        }
     }
 }

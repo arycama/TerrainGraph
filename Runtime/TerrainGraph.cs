@@ -1,88 +1,91 @@
 ﻿using System;
 using System.Collections.Generic;
+using NodeGraph;
 using UnityEngine;
 using UnityEngine.Rendering;
-using NodeGraph;
 
-[CreateAssetMenu(menuName = "Data/Terrain/Terrain Graph")]
-public class TerrainGraph : NodeGraph.NodeGraph
+namespace Terrain_Graph
 {
-    private bool isInitialized;
-
-    public override Type NodeType => typeof(TerrainNode);
-
-    public Terrain ActiveTerrain { get; set; }
-
-    public int Resolution { get; private set; }
-
-    private void OnEnable()
+    [CreateAssetMenu(menuName = "Data/Terrain/Terrain Graph")]
+    public class TerrainGraph : NodeGraph.NodeGraph
     {
-        Initialize();
-    }
+        private bool isInitialized;
 
-    private void OnDisable()
-    {
-        if (isInitialized)
+        public override Type NodeType => typeof(TerrainNode);
+
+        public Terrain ActiveTerrain { get; set; }
+
+        public int Resolution { get; private set; }
+
+        private void OnEnable()
         {
-            foreach (var node in Nodes)
+            Initialize();
+        }
+
+        private void OnDisable()
+        {
+            if (isInitialized)
             {
-                if (node != null)
-                    node.Cleanup();
+                foreach (var node in Nodes)
+                {
+                    if (node != null)
+                        node.Cleanup();
+                }
+
+                isInitialized = false;
+            }
+        }
+
+        private void Initialize()
+        {
+            if (!isInitialized)
+            {
+                foreach (var node in Nodes)
+                {
+                    if (node != null)
+                        node.Initialize();
+                }
+
+                isInitialized = true;
+            }
+        }
+
+        public void Generate(Terrain terrain, List<BaseNode> nodes, int resolution, CommandBuffer command)
+        {
+            Initialize();
+
+            ActiveTerrain = terrain;
+            Resolution = resolution;
+
+            // Update node order
+            UpdateNodeOrder(nodes);
+
+            foreach (var node in nodesToProcess)
+            {
+                if (node == null)
+                    continue;
+
+                node.UpdateValues();
+
+                if (!(node is TerrainNode terrainNode))
+                    continue;
+
+                using (var profilerScope = command.ProfilerScope($"{terrainNode.GetType().Name}.Process"))
+                    terrainNode.Process(this, command);
             }
 
-            isInitialized = false;
-        }
-    }
-
-    private void Initialize()
-    {
-        if (!isInitialized)
-        {
-            foreach (var node in Nodes)
+            // Cleanup any resources
+            foreach (var node in nodesToProcess)
             {
-                if (node != null)
-                    node.Initialize();
+                if (node == null)
+                    continue;
+
+                if (!(node is TerrainNode terrainNode))
+                    continue;
+
+                using (var profilerScope = command.ProfilerScope($"{terrainNode.GetType().Name}.OnFinishProcess"))
+                    terrainNode.OnFinishProcess(this, command);
             }
-
-            isInitialized = true;
-        }
-    }
-
-    public void Generate(Terrain terrain, List<BaseNode> nodes, int resolution, CommandBuffer command)
-    {
-        Initialize();
-
-        ActiveTerrain = terrain;
-        Resolution = resolution;
-
-        // Update node order
-        UpdateNodeOrder(nodes);
-
-        foreach (var node in nodesToProcess)
-        {
-            if (node == null)
-                continue;
-
-            node.UpdateValues();
-
-            if (!(node is TerrainNode terrainNode))
-                continue;
-
-            using(var profilerScope = command.ProfilerScope($"{terrainNode.GetType().Name}.Process"))
-                terrainNode.Process(this, command);
-        }
-
-        // Cleanup any resources
-        foreach (var node in nodesToProcess)
-        {
-            if (node == null)
-                continue;
-
-            if (!(node is TerrainNode terrainNode))
-                continue;
-
-            using (var profilerScope = command.ProfilerScope($"{terrainNode.GetType().Name}.OnFinishProcess"))
-                terrainNode.OnFinishProcess(this, command);
         }
     }
 }

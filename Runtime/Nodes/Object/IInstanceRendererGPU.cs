@@ -1,9 +1,12 @@
-﻿using UnityEngine;
+﻿using NodeGraph;
+using UnityEngine;
 using UnityEngine.Rendering;
-using NodeGraph;
 
-public interface IInstanceRendererGPU
+namespace Terrain_Graph
 {
-    public int AddInstanceType(GameObject prefab);
-    public void AddInstanceData(InstanceRendererData instanceData, CommandBuffer command);
+    public interface IInstanceRendererGPU
+    {
+        public int AddInstanceType(GameObject prefab);
+        public void AddInstanceData(InstanceRendererData instanceData, CommandBuffer command);
+    }
 }

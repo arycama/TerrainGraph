@@ -1,26 +1,28 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 
-public static class MaterialPool
+namespace Terrain_Graph
 {
-    private static readonly Dictionary<string, Material> cache = new();
-
-    public static Material Get(string shader)
+    public static class MaterialPool
     {
-        if(!cache.TryGetValue(shader, out var material))
+        private static readonly Dictionary<string, Material> cache = new();
+
+        public static Material Get(string shader)
         {
-            var shaderFile = Shader.Find(shader);
-            if(shaderFile == null)
+            if (!cache.TryGetValue(shader, out var material))
             {
-                throw new Exception($"Shader {shader} could not be found, check that it exists in your project and does not have compile errors.");
+                var shaderFile = Shader.Find(shader);
+                if (shaderFile == null)
+                {
+                    throw new Exception($"Shader {shader} could not be found, check that it exists in your project and does not have compile errors.");
+                }
+
+                material = new Material(shaderFile) { hideFlags = HideFlags.DontSave };
+                cache.Add(shader, material);
             }
 
-            material = new Material(shaderFile) { hideFlags= HideFlags.DontSave };
-            cache.Add(shader, material);
+            return material;
         }
-
-        return material;
     }
 }
