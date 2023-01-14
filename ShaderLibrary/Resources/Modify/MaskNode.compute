@@ -1,0 +1,8 @@
+﻿#include "../Common.hlsl"
+#pragma kernel MaskNode
+
+[numthreads(8, 8, 1)]
+void MaskNode(uint2 id : SV_DispatchThreadID)
+{
+	Result[id] *= Remap(Mask[id.xy].r, _Min, _Max, 0, 1);
+}

@@ -1,0 +1,8 @@
+﻿#include "../Common.hlsl"
+#pragma kernel Normalize
+
+[numthreads(8, 8, 1)]
+void Normalize(uint2 id : SV_DispatchThreadID)
+{
+	Result[id] = saturate(Remap(Input[id].r, _Min, _Max, 0, 1));
+}

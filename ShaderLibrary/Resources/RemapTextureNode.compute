@@ -1,0 +1,15 @@
+﻿#pragma kernel RemapTexture
+
+Texture3D<float> _Input, _OldMin;
+RWTexture3D<float> _Result;
+float _OldMax, _NewMin, _NewMax;
+
+[numthreads(8, 8, 8)]
+void RemapTexture(uint3 id : SV_DispatchThreadID)
+{
+	float perlin = _Input[id];
+	float oldMin = _OldMin[id];
+	
+	float perlinWorley = _NewMin + (((perlin - oldMin) / (_OldMax - oldMin)) * (_NewMax - _NewMin));
+	_Result[id] = perlinWorley;
+}

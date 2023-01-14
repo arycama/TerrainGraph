@@ -1,0 +1,97 @@
+﻿#include "../Common.hlsl"
+
+#pragma kernel BlurHorizontal
+#pragma kernel BlurVertical
+
+uint _Radius, _Gaussian;
+
+[numthreads(8, 8, 1)]
+void BlurHorizontal(uint2 id : SV_DispatchThreadID)
+{
+	if (_Radius == 0)
+	{
+		Result[id] = Input[id].r;
+		return;
+	}
+
+	float sigma, initialWeight;
+	if (_Gaussian)
+	{
+		sigma = 3;
+		initialWeight = 1.0;
+	}
+	else
+	{
+		sigma = 1.0;
+		initialWeight = 1.0;
+	}
+
+	// Get current texel
+	float result = Input[id].r * initialWeight.r;
+	float length = floor(_Radius * sigma);
+	float sum = initialWeight;
+
+	// Get neighboring horizontal texels
+	for (float i = 1; i < length; i++)
+	{
+		float weight;
+		if (_Gaussian)
+			weight = exp2(-i * i / (_Radius * _Radius));
+		else
+			weight = 1.0;
+
+		result += GetInput(id + i * int2(-1, 0)) * weight;
+		result += GetInput(id + i * int2(1, 0)) * weight;
+		sum += weight * 2;
+	}
+
+	result /= sum;
+
+	// Write
+	Result[id] = result;
+}
+
+[numthreads(8, 8, 1)]
+void BlurVertical(uint2 id : SV_DispatchThreadID)
+{
+	if (_Radius == 0)
+	{
+		Result[id] = Input[id].r;
+		return;
+	}
+
+	float sigma, initialWeight;
+	if (_Gaussian)
+	{
+		sigma = 3;
+		initialWeight = 1.0;
+	}
+	else
+	{
+		sigma = 1;
+		initialWeight = 1;
+	}
+
+	// Get current texel
+	float result = Input[id].r * initialWeight.r;
+	float length = floor(_Radius * sigma);
+	float sum = initialWeight;
+
+	// Get neighboring vertical texels
+	for (float i = 1; i < length; i++)
+	{
+		float weight;
+		if (_Gaussian)
+			weight = exp2(-i * i * rcp(_Radius * _Radius));
+		else
+			weight = 1.0;
+
+		result += GetInput(id + i * int2(0, -1)) * weight;
+		result += GetInput(id + i * int2(0, 1)) * weight;
+		sum += weight * 2;
+	}
+
+	// Normalize and write the final value
+	result /= sum;
+	Result[id] = result;
+}

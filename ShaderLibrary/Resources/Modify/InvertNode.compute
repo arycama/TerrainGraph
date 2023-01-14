@@ -1,0 +1,9 @@
+﻿#include "../Common.hlsl"
+
+#pragma kernel Invert
+
+[numthreads(8, 8, 1)]
+void Invert(uint2 id : SV_DispatchThreadID)
+{
+	Result[id] = Remap(Input[id].r, _Min, _Max, _Max, _Min);
+}

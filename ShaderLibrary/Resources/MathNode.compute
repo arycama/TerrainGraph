@@ -1,0 +1,41 @@
+﻿#pragma kernel Math ADD
+#pragma kernel Math SUBTRACT
+#pragma kernel Math MULTIPLY
+#pragma kernel Math DIVIDE
+#pragma kernel Math MODULO
+#pragma kernel Math POW
+#pragma kernel Math MIN
+#pragma kernel Math MAX
+
+#include "Common.hlsl"
+
+Texture2D<float> InputA, InputB;
+float InputAMax, InputBMax;
+
+[numthreads(8,8,1)]
+void Math(uint2 id : SV_DispatchThreadID)
+{
+	float inputA = InputA[id];
+	float inputB = InputB[id];
+	float result = 0;
+	
+	#ifdef ADD
+		result = inputA + inputB;
+	#elif defined(SUBTRACT)
+		result = inputA - inputB;
+	#elif defined(MULTIPLY)
+		result = inputA * inputB;
+	#elif defined(DIVIDE)
+		result = inputA / inputB;
+	#elif defined(MODULO)
+		result = fmod(inputA, inputB);
+	#elif defined(POW)
+		result = pow(max(0, inputA), inputB);
+	#elif defined(MIN)
+		result = min(inputA, inputB);
+	#elif defined(MAX)
+		result = max(inputA, inputB);
+	#endif
+	
+	Result[id] = result;
+}

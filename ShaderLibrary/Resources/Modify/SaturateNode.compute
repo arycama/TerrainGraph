@@ -1,0 +1,8 @@
+﻿#include "../Common.hlsl"
+#pragma kernel Invert
+
+[numthreads(8, 8, 1)]
+void Invert(uint2 id : SV_DispatchThreadID)
+{
+	Result[id] = saturate(Input[id].r);
+}

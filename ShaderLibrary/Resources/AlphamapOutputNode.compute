@@ -1,0 +1,26 @@
+﻿#pragma kernel AlphamapOutput
+
+#include "Common.hlsl"
+
+RWTexture2DArray<float> _Alphamap;
+float _MaskMin, _MaskMax;
+uint _Mask, _Mode, _Index;
+float2 _Resolution;
+
+[numthreads(8, 8, 1)]
+void AlphamapOutput(uint2 id : SV_DispatchThreadID)
+{
+	float value = Input[id].r;
+
+	// Normalize Input
+	value = Remap(value, _Min, _Max, 0, 1);
+
+	// Apply mask
+	if (_Mask)
+	{
+		float mask = Mask[id].r;
+		value *= Remap(mask.r, _MaskMin, _MaskMax, 0, 1).r;
+	}
+
+	_Alphamap[uint3(id, _Index)] = value;
+}

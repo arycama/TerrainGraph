@@ -1,0 +1,33 @@
+﻿#include "../Common.hlsl"
+
+#pragma kernel Curvature
+
+float3 Scale;
+
+[numthreads(8, 8, 1)]
+void Curvature(uint2 id : SV_DispatchThreadID)
+{
+	float2 d0;
+	float3 d1;
+	GetDerivatives(id, Scale, d0, d1);
+
+	float dx2 = d0.x * d0.x;
+	float dy2 = d0.y * d0.y;
+	float p = dx2 + dy2;
+
+	// Gaussian curvature
+	float ng = d1.x * d1.y - d1.z * d1.z;
+	float dg = pow(p + 1.0, 2.0);
+	float gaussianCurvature = ng / dg;
+
+	// Mean curvature
+	float nm = (1.0 + dy2) * d1.x - 2.0 * d1.z * d0.x * d0.y + (1.0 + dx2) * d1.y;
+	float dm = 2.0 * pow(p + 1.0, 1.5);
+	float meanCurvature = nm / dm;
+
+	float d = sqrt(max(0.0, meanCurvature * meanCurvature - gaussianCurvature));
+
+	float si = atan(meanCurvature / d) * INV_HALF_PI;
+
+	Result[id] = si * 0.5 + 0.5;
+}

@@ -1,0 +1,63 @@
+﻿#include "Utils.hlsl"
+
+#pragma kernel MinMaxNode
+#pragma kernel MinMaxNode FINAL
+
+#ifdef FINAL
+	Texture2D<float2> Input;
+	RWBuffer<float2> Result;
+#else
+	Texture2D<float> Input;
+	RWTexture2D<float2> Temp;
+#endif
+
+#define groupSize uint2(16, 16)
+groupshared float2 sdata[groupSize.x][groupSize.y];
+
+[numthreads(groupSize.x, groupSize.y, 1)]
+void MinMaxNode(uint2 dispatchId : SV_DispatchThreadID, uint2 groupThreadId : SV_GroupThreadId, uint2 groupId : SV_GroupID)
+{
+	uint2 size;
+	Input.GetDimensions(size.x, size.y);
+
+	//if (any(groupThreadId >= size))
+	//{
+	//	return;
+	//}
+
+	// each thread loads one element from global to shared mem
+	sdata[groupThreadId.x][groupThreadId.y] = Input[dispatchId];
+	GroupMemoryBarrierWithGroupSync();
+
+	// do reduction in shared mem
+	for (uint s = 1; s < groupSize.x; s *= 2)
+	{
+		uint2 index = 2 * s * groupThreadId;
+
+		if (all(index < groupSize))
+		{
+			// Load 4 neighboring values, compute total min/max
+			float2 data0 = sdata[index.x + s + 0][index.y + s + 0];
+			float2 data1 = sdata[index.x + s + 1][index.y + s + 0];
+			float2 data2 = sdata[index.x + s + 0][index.y + s + 1];
+			float2 data3 = sdata[index.x + s + 1][index.y + s + 1];
+
+			float minValue = Min4(float4(data0.x, data1.x, data2.x, data3.x));
+			float maxValue = Max4(float4(data0.y, data1.y, data2.y, data3.y));
+
+			sdata[index.x][index.y] = float2(minValue, maxValue);
+		}
+
+		GroupMemoryBarrierWithGroupSync();
+	}
+
+	// write result for this block to global mem
+	if (all(groupThreadId == 0))
+	{
+	#ifdef FINAL
+		Result[0] = sdata[0][0];
+	#else
+		Temp[groupId] = sdata[0][0];
+	#endif
+	}
+}

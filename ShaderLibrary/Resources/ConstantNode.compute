@@ -1,0 +1,11 @@
+﻿#pragma kernel Constant
+
+#include "Common.hlsl"
+
+float Value;
+
+[numthreads(8, 8, 1)]
+void Constant(uint2 id : SV_DispatchThreadID)
+{
+	Result[id] = Value;
+}

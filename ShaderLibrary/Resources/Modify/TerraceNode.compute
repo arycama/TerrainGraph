@@ -1,0 +1,17 @@
+﻿#pragma kernel Terrace
+
+#include "../Common.hlsl"
+float Size, Shape;
+
+[numthreads(8, 8, 1)]
+void Terrace(uint2 id : SV_DispatchThreadID)
+{
+	float input = Input[id].r;
+
+	float terrace = floor(input / Size);
+	float factor = input / Size - terrace;
+	factor = pow(0.5 * cos(2 * PI * factor) + 0.5, Shape);
+
+	float result = lerp(terrace * Size, input, factor);
+	Result[id] = result;
+}

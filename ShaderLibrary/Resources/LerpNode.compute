@@ -1,0 +1,10 @@
+﻿#pragma kernel LerpNode
+#include "Common.hlsl"
+
+Texture2D<float> InputA, InputB, InputT;
+
+[numthreads(8, 8, 1)]
+void LerpNode(uint2 id : SV_DispatchThreadID)
+{
+	Result[id] = lerp(InputA[id], InputB[id], saturate(InputT[id]));
+}

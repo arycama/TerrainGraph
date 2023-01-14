@@ -1,0 +1,17 @@
+﻿#pragma kernel HeightmapInput
+#include "Common.hlsl"
+
+float Height, Offset, Resolution;
+
+[numthreads(8, 8, 1)]
+void HeightmapInput (uint2 id : SV_DispatchThreadID)
+{
+	float2 uv = (id + 0.5) / Resolution;
+
+	float2 dx = float2(1.0 / Resolution, 0.0);
+	float2 dy = float2(0.0, 1.0 / Resolution);
+
+	float height = Input.SampleGrad(_LinearClampSampler, uv, dx, dy).r;
+	
+	Result[id] = height * Height + Offset;
+}

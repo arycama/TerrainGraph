@@ -1,0 +1,77 @@
+﻿#include "../Common.hlsl"
+
+#pragma kernel CSMain
+#pragma kernel CSMain MASK
+
+#ifdef __INTELLISENSE__
+	#define MASK
+#endif
+
+float Spacing;
+uint Seed, XCount, YCount;
+
+float4 Scale;
+float4 ScaleOffset;
+float2 Count;
+float _MaskMin, _MaskMax, _InstanceTypeCount, _TerrainHeightScale, _TerrainHeightOffset;
+uint _RotateToTerrain, _Type;
+
+RWStructuredBuffer<float3x4> _Result;
+RWStructuredBuffer<uint> _InstanceTypeIds;
+Texture2D<float2> _TerrainNormalMap;
+Texture2D<float> _Mask, _Heightmap;
+Buffer<uint> _InputTypeIds;
+
+[numthreads(32, 32, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+	if (id.x >= XCount || id.y >= YCount)
+		return;
+
+	uint state;
+	float4 random = RandomFloat4(id.x + id.y * XCount, Seed, state);
+	float2 uv = (id.xy + random.xy) / Count;
+	
+	#ifdef MASK
+		float rand = RandomFloat(id.x + id.y * XCount, Seed);
+		float mask = Remap(_Mask.SampleLevel(_LinearClampSampler, uv, 0), _MaskMin, _MaskMax, 0, 1);
+		if (mask < rand)
+		{
+			return;
+		}
+	#endif
+	
+	float3 position;
+	position.xz = uv * ScaleOffset.xy + ScaleOffset.zw;
+	position.y = _Heightmap.SampleLevel(_LinearClampSampler, uv, 0.0) * _TerrainHeightScale + _TerrainHeightOffset;
+	
+	float rotationAngle = random.z * 2 * PI;
+	float3 rotation = float3(cos(rotationAngle), 0, sin(rotationAngle));
+	float scale = lerp(Scale.x, Scale.y, random.w);
+	
+	float3 up = float3(0, 1, 0);
+	
+	if (_RotateToTerrain)
+	{
+		up = normalize(float3(_TerrainNormalMap.SampleLevel(_LinearClampSampler, uv, 0.0), 1.0).xzy);
+	}
+	
+	float3 right = normalize(cross(rotation, up));
+	float3 forward = normalize(cross(right, up));
+
+	float4x3 objectToWorld =
+	{
+		right * scale,
+		up * scale,
+		forward * scale,
+		position
+	};
+	
+	uint dstIndex = _Result.IncrementCounter();
+	_Result[dstIndex] = transpose(objectToWorld);
+	
+	// Pick instance type
+	uint instanceTypeIndex = ConstructFloat(PermuteState(state)) * _InstanceTypeCount;
+	uint instanceType = _InputTypeIds[instanceTypeIndex];
+	_InstanceTypeIds[dstIndex] = instanceType;
+}

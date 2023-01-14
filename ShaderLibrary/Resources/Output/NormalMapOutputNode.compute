@@ -1,0 +1,32 @@
+﻿#pragma kernel NormalMap
+
+#include "../Common.hlsl"
+
+Texture2D<float> _Input;
+RWTexture2D<float2> _Result;
+float2 _Scale;
+float _Height;
+uint _Resolution;
+
+[numthreads(8, 8, 1)]
+void NormalMap(int2 id : SV_DispatchThreadID)
+{
+	float h[3][3];
+	float3x3 values;
+	
+	[unroll]
+	for (uint y = 0; y < 3; y++)
+	{
+		[unroll]
+		for (uint x = 0; x < 3; x++)
+		{
+			h[x][y] = _Input[clamp(id + uint2(x, y), 1, _Resolution) - 1];
+		}
+	}
+	
+	float2 d;
+	d.x = h[0][0] + 2.0 * h[0][1] + h[0][2] - h[2][0] - 2.0 * h[2][1] - h[2][2];
+	d.y = h[0][0] + 2.0 * h[1][0] + h[2][0] - h[0][2] - 2.0 * h[1][2] - h[2][2];
+	
+	_Result[id] = d * _Scale;
+}

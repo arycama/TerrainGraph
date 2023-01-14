@@ -1,0 +1,20 @@
+﻿#include "../Common.hlsl"
+#pragma kernel Step
+
+float Threshold, Falloff;
+
+[numthreads(8, 8, 1)]
+void Step(uint2 id : SV_DispatchThreadID)
+{
+	float input = Input[id].r;
+
+	if(Falloff == 0.0)
+	{
+		Result[id] = input > Threshold;
+	}
+	else
+	{
+	// Goes from 0-1, centered around Threshold, with a linear gradient that spans falloff.
+		Result[id] = saturate((input - Threshold) / Falloff + 0.5);
+	}
+}

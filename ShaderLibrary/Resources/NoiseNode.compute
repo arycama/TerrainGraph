@@ -1,0 +1,45 @@
+﻿#pragma kernel Noise SIMPLEX FBM
+#pragma kernel Noise SIMPLEX BILLOW
+#pragma kernel Noise SIMPLEX RIDGED
+#pragma kernel Noise CELLULAR FBM
+#pragma kernel Noise CELLULAR BILLOW
+#pragma kernel Noise CELLULAR RIDGED
+#pragma kernel Noise PERLIN FBM
+#pragma kernel Noise PERLIN BILLOW
+#pragma kernel Noise PERLIN RIDGED
+
+#include "Common.hlsl"
+#include "Packages/com.arycama.webglnoiseunity/Noise.hlsl"
+
+float Amplitude, Frequency, Gain, Lacunarity, Octaves;
+float4 ScaleOffset;
+
+[numthreads(8, 8, 1)]
+void Noise(uint2 id : SV_DispatchThreadID)
+{
+	float2 worldPos = id.xy * ScaleOffset.xy + ScaleOffset.zw;
+	float result = 0;
+
+	for (float i = 0; i < Octaves; i++)
+	{
+		float amp = Amplitude * pow(max(0, Gain), i);
+		float freq = Frequency * pow(max(0, Lacunarity), i);
+		float noise = 0;
+		
+		#if defined(SIMPLEX) || defined(PERLIN)
+			noise = SimplexNoise(worldPos * freq) * 0.5 + 0.5;
+		#elif defined(CELLULAR)
+			noise = pow(CellularNoise(worldPos * freq).x, 2);
+		#endif
+		
+		#ifdef FBM
+			result += noise * amp;
+		#elif defined(BILLOW)
+			result += abs(noise * 2 - 1) * amp;
+		#elif defined(RIDGED)
+			result += (1 - abs(noise * 2 - 1)) * amp;
+		#endif
+	}
+	
+	Result[id] = result;
+}

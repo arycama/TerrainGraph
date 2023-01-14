@@ -1,0 +1,9 @@
+﻿#pragma kernel CSMain
+#include "Common.hlsl"
+
+[numthreads(8, 8, 1)]
+void CSMain(uint2 id : SV_DispatchThreadID)
+{
+	// Remap from Min:Max range to 0:1
+	Result[id.xy] = Remap(Input[id].r, _Min, _Max, 0, 1.0);
+}

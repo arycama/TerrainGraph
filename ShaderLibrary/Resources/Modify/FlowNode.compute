@@ -1,0 +1,93 @@
+﻿// Equations from https://github.com/Scrawk/Terrain-Topology-Algorithms
+
+#include "../Common.hlsl"
+
+#pragma kernel ComputeOutflow
+#pragma kernel UpdateWaterMap
+#pragma kernel CalculateVelocityField
+
+float Time, _First, _Height;
+float3 _Scale;
+uint _Size;
+RWTexture2D<float4> OutFlow;
+RWTexture2D<float2> _Velocity;
+RWTexture2D<float> WaterMap;
+
+[numthreads(8, 8, 1)]
+void ComputeOutflow(uint2 id : SV_DispatchThreadID)
+{
+	// Compute out flow
+	float4 flow;
+	float centerAmount;
+	if (_First)
+	{
+		flow = 0.0;
+		centerAmount = _Height;
+	}
+	else
+	{
+		flow = OutFlow[id];
+		centerAmount = WaterMap[id];
+	}
+	
+	float centerHeight = Input[id].r;
+	int2 offsets[4] = { int2(-1, 0), int2(1, 0), int2(0, -1), int2(0, 1) };
+	
+	[unroll]
+	for (uint i = 0; i < 4; i++)
+	{
+		// out flow is previous flow plus flow for this time step.
+		int2 offset = offsets[i];
+		float neighborAmount = WaterMap[clamp(id + offset, 0, _Size - 1)];
+		float neighborHeight = Input[clamp(id + offset, 0, _Size - 1)].r;
+		flow[i] += max(0.0, (centerAmount + centerHeight) - (neighborAmount + neighborHeight));
+	}
+	
+	float sum = dot(flow, 1.0);
+
+	if (sum > 0.0)
+	{
+        //If the sum of the outflow flux exceeds the amount in the cell
+        //flow value will be scaled down by a factor K to avoid negative update.
+		float K = saturate(centerAmount / (sum * Time));
+		OutFlow[id] = flow * K;
+	}
+	else
+	{
+		OutFlow[id] = 0;
+	}
+}
+
+[numthreads(8, 8, 1)]
+void UpdateWaterMap(uint2 id : SV_DispatchThreadID)
+{
+	// Current amount of water in the cell
+	float result = WaterMap[id];
+	
+	// Amount of water flowing into this cell from neighour cells.
+	result += OutFlow[clamp(id + int2(-1, 0), 0, _Size)].y * Time;
+	result += OutFlow[clamp(id + int2(1, 0), 0, _Size)].x * Time;
+	result += OutFlow[clamp(id + int2(0, -1), 0, _Size)].w * Time;
+	result += OutFlow[clamp(id + int2(0, 1), 0, _Size)].z * Time;
+
+	// Subtract total amount of water flowing out from this cell
+	result -= dot(OutFlow[id], Time);
+	
+    // Result is net volume change over time
+	WaterMap[id] = max(0.0, result);
+}
+
+[numthreads(8, 8, 1)]
+void CalculateVelocityField(uint2 id : SV_DispatchThreadID)
+{
+	float4 center = OutFlow[id];
+	
+	float dl = OutFlow[clamp(id + int2(-1, 0), 0, _Size)].y - center.x;
+	float dr = OutFlow[clamp(id + int2(1, 0), 0, _Size)].x - center.y;
+	float dt = OutFlow[clamp(id + int2(0, 1), 0, _Size)].z - center.w;
+	float db = OutFlow[clamp(id + int2(0, -1), 0, _Size)].w - center.z;
+
+	float2 velocity = float2(dl - dr, db - dt) / (2.0 * _Scale.xz);
+	_Velocity[id] = velocity;
+	Result[id] = length(velocity);
+}

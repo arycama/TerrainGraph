@@ -1,0 +1,15 @@
+﻿#include "../Common.hlsl"
+
+#pragma kernel Slope
+
+float3 Scale;
+
+[numthreads(8, 8, 1)]
+void Slope(uint2 id : SV_DispatchThreadID)
+{
+	float2 d0;
+	float3 d1;
+	GetDerivatives(id, Scale, d0, d1);
+
+	Result[id] = atan(length(d0)) * INV_HALF_PI;
+}
