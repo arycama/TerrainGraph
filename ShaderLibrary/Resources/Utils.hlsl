@@ -1,8 +1,8 @@
 ﻿#ifndef UTILS_INCLUDED
 #define UTILS_INCLUDED
 
-float PI = radians(180);
-float INV_HALF_PI = rcp(radians(90));
+const static float PI = radians(180);
+const static float INV_HALF_PI = rcp(radians(90));
 
 float Min4(float4 x)
 {
