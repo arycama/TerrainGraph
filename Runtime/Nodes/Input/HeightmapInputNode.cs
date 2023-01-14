@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     [NodeMenuItem("Input/Heightmap Input")]
     public partial class HeightmapInputNode : TerrainInputNode

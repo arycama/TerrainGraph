@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     /// <summary>
     /// Inverts the input node, so it will go from Max-Min, instead of Min-Max

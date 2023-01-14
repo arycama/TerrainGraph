@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     /// <summary>
     /// Clamps node output between 0 and 1

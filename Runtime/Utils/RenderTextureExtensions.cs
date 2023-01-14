@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     public static class RenderTextureExtensions
     {

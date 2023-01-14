@@ -4,7 +4,7 @@ using NodeGraph;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     [CreateAssetMenu(menuName = "Data/Terrain/Terrain Graph")]
     public class TerrainGraph : NodeGraph.NodeGraph

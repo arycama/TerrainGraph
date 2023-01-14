@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.Pool;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     public struct ScopedPooledList<T> : IDisposable
     {

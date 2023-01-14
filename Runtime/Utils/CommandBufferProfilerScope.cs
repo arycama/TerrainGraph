@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine.Rendering;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     public readonly struct CommandBufferProfilerScope : IDisposable
     {

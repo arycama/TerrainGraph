@@ -1,4 +1,4 @@
-﻿namespace Terrain_Graph
+﻿namespace TerrainGraph
 {
     public enum FractalType
     {

@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     [NodeMenuItem("Input/Constant")]
     public partial class ConstantNode : TerrainInputNode

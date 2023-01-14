@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     [NodeMenuItem("Modify/Slope")]
     public partial class SlopeNode : TerrainInputNode

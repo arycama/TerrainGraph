@@ -1,6 +1,6 @@
 ﻿using UnityEngine.Rendering;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     public interface ITerrainRenderer
     {

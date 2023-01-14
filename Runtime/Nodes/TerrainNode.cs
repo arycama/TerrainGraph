@@ -1,7 +1,7 @@
 ﻿using NodeGraph;
 using UnityEngine.Rendering;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     public abstract class TerrainNode : BaseNode
     {

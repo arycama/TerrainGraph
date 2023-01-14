@@ -3,7 +3,7 @@ using NodeGraph;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     [NodeMenuItem("Modify/Smooth")]
     public partial class SmoothNode : TerrainInputNode

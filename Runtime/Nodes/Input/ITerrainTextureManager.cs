@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     public interface ITerrainTextureManager
     {

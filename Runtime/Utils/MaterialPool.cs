@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     public static class MaterialPool
     {

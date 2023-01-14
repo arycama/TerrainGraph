@@ -2,7 +2,7 @@ using NodeGraph;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Terrain_Graph
+namespace TerrainGraph
 {
     public partial class TextureOutputTerrainNode : TerrainNode
     {
