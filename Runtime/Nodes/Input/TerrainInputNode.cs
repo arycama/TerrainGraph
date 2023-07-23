@@ -21,6 +21,8 @@ namespace TerrainGraph
 
         public override bool HasPreviewTexture => true;
 
+        protected virtual RenderTextureFormat GetFormat => RenderTextureFormat.RFloat;
+
         public override void Initialize()
         {
             base.Initialize();
@@ -37,7 +39,7 @@ namespace TerrainGraph
             terrainGraph = graph;
             var resolution = graph.Resolution;
 
-            var descriptor = new RenderTextureDescriptor(resolution, resolution, RenderTextureFormat.RFloat)
+            var descriptor = new RenderTextureDescriptor(resolution, resolution, GetFormat)
             {
                 autoGenerateMips = false,
                 enableRandomWrite = true,
