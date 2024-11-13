@@ -17,6 +17,18 @@ namespace TerrainGraph
         public TerrainLayer TerrainLayer => terrainLayer;
         public override bool HasPreviewTexture => true;
 
+        private int index;
+
+        // Need to setup the layers/data before executing
+        public void PreOutput(Terrain terrain)
+        {
+            if (terrainLayer == null)
+                return;
+
+            var component = terrain.GetComponent<ITerrainTextureManager>();
+            index = component.AddTerrainLayer(terrainLayer, true);
+        }
+
         public override void Process(TerrainGraph graph, CommandBuffer command)
         {
             if (terrainLayer == null)
@@ -43,17 +55,13 @@ namespace TerrainGraph
                 command.SetComputeIntParam(computeShader, "_Mask", 0);
             }
 
-            var component = graph.ActiveTerrain.GetComponent<ITerrainTextureManager>();
-            var index = component.AddTerrainLayer(terrainLayer, true);
-
-            var idMap = component.IdMap;
             var tempArrayId = Shader.PropertyToID("_TempTerrainId");
             command.SetComputeTextureParam(computeShader, 0, "Input", input);
             command.SetComputeTextureParam(computeShader, 0, "_Alphamap", tempArrayId);
             command.SetComputeFloatParam(computeShader, "_Min", GetConnectionMin("input"));
             command.SetComputeFloatParam(computeShader, "_Max", GetConnectionMax("input"));
             command.SetComputeIntParam(computeShader, "_Index", index);
-            command.SetComputeVectorParam(computeShader, "_Resolution", new Vector2(idMap.width, idMap.height));
+            command.SetComputeVectorParam(computeShader, "_Resolution", new Vector2(graph.Resolution, graph.Resolution));
             command.DispatchNormalized(computeShader, 0, graph.Resolution, graph.Resolution, 1);
         }
     }
