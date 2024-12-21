@@ -4,3 +4,7 @@
 
 /.vs
 /Runtime/.vs
+/bin
+/obj
+/bin.meta
+/obj.meta
