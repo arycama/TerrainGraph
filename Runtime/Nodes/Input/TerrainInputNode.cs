@@ -89,12 +89,12 @@ namespace TerrainGraph
 
             // Update preview image
             // This might mess with rendering..
-            var previewMaterial = MaterialPool.Get("Hidden/Terrain Node Preview");
+            //var previewMaterial = MaterialPool.Get("Hidden/Terrain Node Preview");
 
             // TODO: Copy into temp texture with mips enabled?
-            command.GenerateMips(result);
-            command.SetGlobalVector("_MinMax", new Vector2(Min, Max));
-            command.Blit(result, PreviewTexture, previewMaterial, 1);
+            //command.GenerateMips(result);
+            //command.SetGlobalVector("_MinMax", new Vector2(Min, Max));
+            //command.Blit(result, PreviewTexture, previewMaterial, 1);
 
             // Update min/max range display
             //label.text = $"Range: ({node.Min:F1}:{node.Max:F1})";

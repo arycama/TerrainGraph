@@ -34,8 +34,8 @@ namespace TerrainGraph
             if (terrainLayer == null)
                 return;
 
-            var previewMaterial = MaterialPool.Get("Hidden/Terrain Node Preview");
-            command.Blit(terrainLayer.diffuseTexture, PreviewTexture, previewMaterial, 2);
+           // var previewMaterial = MaterialPool.Get("Hidden/Terrain Node Preview");
+            //command.Blit(terrainLayer.diffuseTexture, PreviewTexture, previewMaterial, 2);
 
             if (!NodeIsConnected("input"))
                 return;
