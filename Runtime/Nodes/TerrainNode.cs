@@ -17,6 +17,9 @@ namespace TerrainGraph
             return node != null ? node.Max : 1;
         }
 
+        // Used to allocate resources before executing
+        public virtual void PreProcess(TerrainGraph graph, CommandBuffer command) { }
+
         public abstract void Process(TerrainGraph graph, CommandBuffer command);
 
         public virtual void OnFinishProcess(TerrainGraph graph, CommandBuffer command) { }

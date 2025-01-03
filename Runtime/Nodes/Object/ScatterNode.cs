@@ -19,6 +19,7 @@ namespace TerrainGraph
         [Input] private RenderTargetIdentifier input;
 
         private ComputeBuffer inputTypeIdsBuffer;
+        private ITerrainGraphGraphicsBufferHandle result, instanceTypeIds;
 
         public override void Initialize()
         {
@@ -28,6 +29,20 @@ namespace TerrainGraph
         public override void Cleanup()
         {
             inputTypeIdsBuffer.Release();
+        }
+
+        public override void PreProcess(TerrainGraph graph, CommandBuffer command)
+        {
+            var threadCount = Vector3Int.CeilToInt(graph.ActiveTerrain.terrainData.size / spacing);
+
+            var bufferSize = threadCount.x * threadCount.z;
+            if (bufferSize < 1)
+            {
+                return;
+            }
+
+            result = graph.GetGraphicsBuffer(bufferSize, sizeof(float) * 12, GraphicsBuffer.Target.Counter);
+            instanceTypeIds = graph.GetGraphicsBuffer(bufferSize, sizeof(uint), GraphicsBuffer.Target.Structured);
         }
 
         public override void Process(TerrainGraph graph, CommandBuffer command)
@@ -58,9 +73,6 @@ namespace TerrainGraph
 
             var size = graph.ActiveTerrain.terrainData.size;
 
-            var result = new ComputeBuffer(bufferSize, sizeof(float) * 12, ComputeBufferType.Counter);
-            var instanceTypeIds = new ComputeBuffer(bufferSize, sizeof(uint), ComputeBufferType.Structured);
-
             // Set up some parameters for distributing the points, and their scale
             var computeShader = Resources.Load<ComputeShader>("Objects/ScatterNode");
             command.SetComputeFloatParam(computeShader, "Spacing", spacing);
@@ -79,7 +91,7 @@ namespace TerrainGraph
             command.SetComputeFloatParam(computeShader, "_TerrainHeightScale", graph.ActiveTerrain.terrainData.size.y);
             command.SetComputeFloatParam(computeShader, "_TerrainHeightOffset", graph.ActiveTerrain.GetPosition().y);
 
-            command.SetBufferCounterValue(result, 0);
+            command.SetBufferCounterValue(result.GetGraphicsBuffer(), 0);
 
             command.SetComputeIntParam(computeShader, "_Type", instanceIds.Value[0]);
 
@@ -94,15 +106,15 @@ namespace TerrainGraph
                 command.SetComputeFloatParam(computeShader, "_MaskMax", GetConnectionMax("input"));
                 command.SetComputeTextureParam(computeShader, 1, "_Mask", input);
                 command.SetComputeTextureParam(computeShader, 1, "_TerrainNormalMap", terrainRenderer.NormalMap);
-                command.SetComputeBufferParam(computeShader, 1, "_Result", result);
-                command.SetComputeBufferParam(computeShader, 1, "_InstanceTypeIds", instanceTypeIds);
+                command.SetComputeBufferParam(computeShader, 1, "_Result", result.GetGraphicsBuffer());
+                command.SetComputeBufferParam(computeShader, 1, "_InstanceTypeIds", instanceTypeIds.GetGraphicsBuffer());
                 command.SetComputeBufferParam(computeShader, 1, "_InputTypeIds", inputTypeIdsBuffer);
                 command.DispatchNormalized(computeShader, 1, threadCount.x, threadCount.z, 1);
             }
             else
             {
-                command.SetComputeBufferParam(computeShader, 0, "_Result", result);
-                command.SetComputeBufferParam(computeShader, 0, "_InstanceTypeIds", instanceTypeIds);
+                command.SetComputeBufferParam(computeShader, 0, "_Result", result.GetGraphicsBuffer());
+                command.SetComputeBufferParam(computeShader, 0, "_InstanceTypeIds", instanceTypeIds.GetGraphicsBuffer());
                 command.SetComputeTextureParam(computeShader, 0, "_TerrainNormalMap", terrainRenderer.NormalMap);
                 command.SetComputeBufferParam(computeShader, 0, "_InputTypeIds", inputTypeIdsBuffer);
                 command.DispatchNormalized(computeShader, 0, threadCount.x, threadCount.z, 1);
