@@ -52,15 +52,20 @@ namespace TerrainGraph
             }
         }
 
-        public void PreGenerate(Terrain terrain, List<BaseNode> nodes, int resolution, CommandBuffer command)
+        public void PreGenerate<T>(Terrain terrain, int resolution) where T : TerrainNode
         {
+            using var nodes = ScopedPooledList<T>.Get();
+            foreach (var node in Nodes)
+                if (node is T typedNode)
+                    nodes.Value.Add(typedNode);
+
             Initialize();
 
             ActiveTerrain = terrain;
             Resolution = resolution;
 
             // Update node order
-            UpdateNodeOrder(nodes);
+            UpdateNodeOrder<T>(nodes);
 
             foreach (var node in nodesToProcess)
             {
@@ -70,11 +75,11 @@ namespace TerrainGraph
                 if (!(node is TerrainNode terrainNode))
                     continue;
 
-                terrainNode.PreProcess(this, command);
+                terrainNode.PreProcess(this);
             }
         }
 
-        public void PostGenerate(Terrain terrain, List<BaseNode> nodes, int resolution, CommandBuffer command)
+        public void PostGenerate(CommandBuffer command)
         {
             foreach (var node in nodesToProcess)
             {
@@ -83,10 +88,9 @@ namespace TerrainGraph
 
                 node.UpdateValues();
 
-                if (!(node is TerrainNode terrainNode))
+                if (node is not TerrainNode terrainNode)
                     continue;
 
-                using (var profilerScope = command.ProfilerScope($"{terrainNode.GetType().Name}.Process"))
                     terrainNode.Process(this, command);
             }
 
@@ -96,19 +100,17 @@ namespace TerrainGraph
                 if (node == null)
                     continue;
 
-                if (!(node is TerrainNode terrainNode))
+                if (node is not TerrainNode terrainNode)
                     continue;
 
-                using (var profilerScope = command.ProfilerScope($"{terrainNode.GetType().Name}.OnFinishProcess"))
                     terrainNode.OnFinishProcess(this, command);
             }
         }
 
-
-        public void Generate(Terrain terrain, List<BaseNode> nodes, int resolution, CommandBuffer command)
+        public void Generate<T>(Terrain terrain, int resolution, CommandBuffer command) where T : TerrainNode
         {
-            PreGenerate(terrain, nodes, resolution, command);
-            PostGenerate(terrain, nodes, resolution, command);
+            PreGenerate<T>(terrain, resolution);
+            PostGenerate(command);
         }
 
         public ITerrainGraphGraphicsBufferHandle GetGraphicsBuffer(int count, int stride, GraphicsBuffer.Target target)

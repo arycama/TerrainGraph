@@ -88,14 +88,9 @@ namespace TerrainGraph
             this.terrainLayersProcedural = proceduralLayers;
             this.IdMap = idMap;
 
-            using var nodes = ScopedPooledList<BaseNode>.Get();
-            foreach (var node in terrainGraph.Nodes)
-                if (node is AlphamapOutputNode)
-                    nodes.Value.Add(node);
-
             var terrain = GetComponent<Terrain>();
             var terrainData = terrain.terrainData;
-            terrainGraph.Generate(terrain, nodes, terrainData.alphamapResolution, command);
+            terrainGraph.Generate<AlphamapOutputNode>(terrain, terrainData.alphamapResolution, command);
 
             cachedTerrainGraph = terrainGraph;
             cachedTerrainGraphVersion = terrainGraph.Version;

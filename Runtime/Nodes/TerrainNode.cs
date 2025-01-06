@@ -18,7 +18,7 @@ namespace TerrainGraph
         }
 
         // Used to allocate resources before executing
-        public virtual void PreProcess(TerrainGraph graph, CommandBuffer command) { }
+        public virtual void PreProcess(TerrainGraph graph) { }
 
         public abstract void Process(TerrainGraph graph, CommandBuffer command);
 

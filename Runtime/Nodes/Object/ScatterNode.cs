@@ -31,7 +31,7 @@ namespace TerrainGraph
             inputTypeIdsBuffer.Release();
         }
 
-        public override void PreProcess(TerrainGraph graph, CommandBuffer command)
+        public override void PreProcess(TerrainGraph graph)
         {
             var threadCount = Vector3Int.CeilToInt(graph.ActiveTerrain.terrainData.size / spacing);
 
