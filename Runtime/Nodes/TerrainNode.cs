@@ -22,6 +22,7 @@ namespace TerrainGraph
 
         public abstract void Process(TerrainGraph graph, CommandBuffer command);
 
+        // TODO: Can probably replace this with resource management system
         public virtual void OnFinishProcess(TerrainGraph graph, CommandBuffer command) { }
     }
 }

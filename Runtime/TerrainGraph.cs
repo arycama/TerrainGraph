@@ -107,6 +107,37 @@ namespace TerrainGraph
             }
         }
 
+        public IEnumerable<T> PostGenerate<T>(CommandBuffer command)
+        {
+            foreach (var node in nodesToProcess)
+            {
+                if (node == null)
+                    continue;
+
+                node.UpdateValues();
+
+                if (node is not TerrainNode terrainNode)
+                    continue;
+
+                terrainNode.Process(this, command);
+
+                if (node is T typedNode)
+                    yield return typedNode;
+            }
+
+            // Cleanup any resources
+            foreach (var node in nodesToProcess)
+            {
+                if (node == null)
+                    continue;
+
+                if (node is not TerrainNode terrainNode)
+                    continue;
+
+                terrainNode.OnFinishProcess(this, command);
+            }
+        }
+
         public void Generate<T>(Terrain terrain, int resolution, CommandBuffer command) where T : TerrainNode
         {
             PreGenerate<T>(terrain, resolution);

@@ -5,6 +5,7 @@ using UnityEngine.Rendering;
 
 namespace TerrainGraph
 {
+
     [NodeMenuItem("Object/Scatter")]
     public partial class ScatterNode : TerrainNode
     {
@@ -20,6 +21,9 @@ namespace TerrainGraph
 
         private ComputeBuffer inputTypeIdsBuffer;
         private ITerrainGraphGraphicsBufferHandle result, instanceTypeIds;
+
+        // TODO: Hrm
+        public InstanceRendererData Result { get; private set; }
 
         public override void Initialize()
         {
@@ -60,16 +64,8 @@ namespace TerrainGraph
                 return;
             }
 
-            var instanceRenderer = graph.ActiveTerrain.GetComponent<IInstanceRendererGPU>();
-            if (instanceRenderer == null || prefabs.Length == 0)
+            if (prefabs.Length == 0)
                 return;
-
-            var instanceIds = ScopedPooledList<int>.Get();
-            foreach (var prefab in prefabs)
-            {
-                var instanceTypeId = instanceRenderer.AddInstanceType(prefab);
-                instanceIds.Value.Add(instanceTypeId);
-            }
 
             var size = graph.ActiveTerrain.terrainData.size;
 
@@ -93,10 +89,7 @@ namespace TerrainGraph
 
             command.SetBufferCounterValue(result.GetGraphicsBuffer(), 0);
 
-            command.SetComputeIntParam(computeShader, "_Type", instanceIds.Value[0]);
-
-            command.SetComputeFloatParam(computeShader, "_InstanceTypeCount", instanceIds.Value.Count);
-            command.ExpandAndSetComputeBufferData(ref inputTypeIdsBuffer, instanceIds.Value);
+            command.SetComputeFloatParam(computeShader, "_InstanceTypeCount", prefabs.Length);
 
             // If a probability input is assigned, there is more work to do
             if (NodeIsConnected("input"))
@@ -108,7 +101,6 @@ namespace TerrainGraph
                 command.SetComputeTextureParam(computeShader, 1, "_TerrainNormalMap", terrainRenderer.NormalMap);
                 command.SetComputeBufferParam(computeShader, 1, "_Result", result.GetGraphicsBuffer());
                 command.SetComputeBufferParam(computeShader, 1, "_InstanceTypeIds", instanceTypeIds.GetGraphicsBuffer());
-                command.SetComputeBufferParam(computeShader, 1, "_InputTypeIds", inputTypeIdsBuffer);
                 command.DispatchNormalized(computeShader, 1, threadCount.x, threadCount.z, 1);
             }
             else
@@ -116,12 +108,10 @@ namespace TerrainGraph
                 command.SetComputeBufferParam(computeShader, 0, "_Result", result.GetGraphicsBuffer());
                 command.SetComputeBufferParam(computeShader, 0, "_InstanceTypeIds", instanceTypeIds.GetGraphicsBuffer());
                 command.SetComputeTextureParam(computeShader, 0, "_TerrainNormalMap", terrainRenderer.NormalMap);
-                command.SetComputeBufferParam(computeShader, 0, "_InputTypeIds", inputTypeIdsBuffer);
                 command.DispatchNormalized(computeShader, 0, threadCount.x, threadCount.z, 1);
             }
 
-            var instanceData = new InstanceRendererData(result, instanceTypeIds, prefabs, -1);
-            instanceRenderer.AddInstanceData(instanceData, command);
+            Result = new InstanceRendererData(result, instanceTypeIds, prefabs, -1);
         }
     }
 }

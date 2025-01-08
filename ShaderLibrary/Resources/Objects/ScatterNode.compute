@@ -14,7 +14,7 @@ float4 Scale;
 float4 ScaleOffset;
 float2 Count;
 float _MaskMin, _MaskMax, _InstanceTypeCount, _TerrainHeightScale, _TerrainHeightOffset;
-uint _RotateToTerrain, _Type;
+uint _RotateToTerrain;
 
 RWStructuredBuffer<float3x4> _Result;
 RWStructuredBuffer<uint> _InstanceTypeIds;
@@ -72,6 +72,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	
 	// Pick instance type
 	uint instanceTypeIndex = ConstructFloat(PermuteState(state)) * _InstanceTypeCount;
-	uint instanceType = _InputTypeIds[instanceTypeIndex];
-	_InstanceTypeIds[dstIndex] = instanceType;
+	_InstanceTypeIds[dstIndex] = instanceTypeIndex;
 }

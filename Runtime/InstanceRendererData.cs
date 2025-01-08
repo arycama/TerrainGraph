@@ -4,6 +4,7 @@ namespace TerrainGraph
 {
     public struct InstanceRendererData
     {
+        public bool IsValid { get; }
         public GameObject[] GameObjects { get; private set; }
         public ITerrainGraphGraphicsBufferHandle PositionBuffer { get; private set; }
         public ITerrainGraphGraphicsBufferHandle InstanceTypeIdBuffer { get; private set; }
@@ -15,6 +16,7 @@ namespace TerrainGraph
             PositionBuffer = positionBuffer;
             InstanceTypeIdBuffer = instanceTypeIdBuffer;
             Count = count;
+            IsValid = true;
         }
     }
 }
