@@ -60,9 +60,7 @@ namespace TerrainGraph
 
             var bufferSize = threadCount.x * threadCount.z;
             if (bufferSize < 1)
-            {
                 return;
-            }
 
             if (prefabs.Length == 0)
                 return;
@@ -111,7 +109,7 @@ namespace TerrainGraph
                 command.DispatchNormalized(computeShader, 0, threadCount.x, threadCount.z, 1);
             }
 
-            Result = new InstanceRendererData(result, instanceTypeIds, prefabs, -1);
+            Result = new InstanceRendererData(result, instanceTypeIds, prefabs);
         }
     }
 }

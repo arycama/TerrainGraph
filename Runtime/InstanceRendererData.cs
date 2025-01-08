@@ -8,14 +8,12 @@ namespace TerrainGraph
         public GameObject[] GameObjects { get; private set; }
         public ITerrainGraphGraphicsBufferHandle PositionBuffer { get; private set; }
         public ITerrainGraphGraphicsBufferHandle InstanceTypeIdBuffer { get; private set; }
-        public int Count { get; set; }
 
-        public InstanceRendererData(ITerrainGraphGraphicsBufferHandle positionBuffer, ITerrainGraphGraphicsBufferHandle instanceTypeIdBuffer, GameObject[] gameObjects, int count)
+        public InstanceRendererData(ITerrainGraphGraphicsBufferHandle positionBuffer, ITerrainGraphGraphicsBufferHandle instanceTypeIdBuffer, GameObject[] gameObjects)
         {
             GameObjects = gameObjects;
             PositionBuffer = positionBuffer;
             InstanceTypeIdBuffer = instanceTypeIdBuffer;
-            Count = count;
             IsValid = true;
         }
     }

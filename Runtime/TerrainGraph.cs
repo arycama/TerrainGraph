@@ -52,7 +52,7 @@ namespace TerrainGraph
             }
         }
 
-        public void PreGenerate<T>(Terrain terrain, int resolution) where T : TerrainNode
+        public void PreGenerate<T>(Terrain terrain, int resolution, out int nodeCount) where T : TerrainNode
         {
             using var nodes = ScopedPooledList<T>.Get();
             foreach (var node in Nodes)
@@ -72,11 +72,13 @@ namespace TerrainGraph
                 if (node == null)
                     continue;
 
-                if (!(node is TerrainNode terrainNode))
+                if (node is not TerrainNode terrainNode)
                     continue;
 
                 terrainNode.PreProcess(this);
             }
+
+            nodeCount = nodes.Value.Count;
         }
 
         public void PostGenerate(CommandBuffer command)
@@ -140,7 +142,7 @@ namespace TerrainGraph
 
         public void Generate<T>(Terrain terrain, int resolution, CommandBuffer command) where T : TerrainNode
         {
-            PreGenerate<T>(terrain, resolution);
+            PreGenerate<T>(terrain, resolution, out _);
             PostGenerate(command);
         }
 
