@@ -6,14 +6,10 @@ namespace TerrainGraph
     {
         private GraphicsBuffer graphicsBuffer;
 
-        public DirectGraphicsBufferHandle(int count, int stride, GraphicsBuffer.Target target)
+        public DirectGraphicsBufferHandle(int count, int stride, GraphicsBuffer.Target target, GraphicsBuffer.UsageFlags usageFlags)
         {
-            graphicsBuffer = new GraphicsBuffer(target, count, stride);
+            graphicsBuffer = new GraphicsBuffer(target, usageFlags, count, stride);
         }
-
-        //void ITerrainGraphGraphicsBufferHandle.AllocateGraphicsBuffer(int count, int stride, GraphicsBuffer.Target target)
-        //{
-        //}
 
         GraphicsBuffer ITerrainGraphGraphicsBufferHandle.GetGraphicsBuffer()
         {

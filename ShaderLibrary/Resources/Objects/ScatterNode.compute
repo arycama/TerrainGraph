@@ -17,7 +17,7 @@ float _MaskMin, _MaskMax, _InstanceTypeCount, _TerrainHeightScale, _TerrainHeigh
 uint _RotateToTerrain;
 
 RWStructuredBuffer<float3x4> _Result;
-RWStructuredBuffer<uint> _InstanceTypeIds;
+RWStructuredBuffer<uint> _InstanceTypeIds, _InstanceTypeCounts;
 Texture2D<float2> _TerrainNormalMap;
 Texture2D<float> _Mask, _Heightmap;
 Buffer<uint> _InputTypeIds;
@@ -73,4 +73,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	// Pick instance type
 	uint instanceTypeIndex = ConstructFloat(PermuteState(state)) * _InstanceTypeCount;
 	_InstanceTypeIds[dstIndex] = instanceTypeIndex;
+	
+	// Increment the counter for this type
+	InterlockedAdd(_InstanceTypeCounts[instanceTypeIndex], 1);
 }

@@ -17,7 +17,7 @@ namespace TerrainGraph
 
         public int Resolution { get; private set; }
 
-        public Func<int, int, GraphicsBuffer.Target, ITerrainGraphGraphicsBufferHandle> CreateGraphicsBufferHandle;
+        public Func<int, int, GraphicsBuffer.Target, GraphicsBuffer.UsageFlags, ITerrainGraphGraphicsBufferHandle> CreateGraphicsBufferHandle;
 
         private void OnEnable()
         {
@@ -52,7 +52,7 @@ namespace TerrainGraph
             }
         }
 
-        public void PreGenerate<T>(Terrain terrain, int resolution, out int nodeCount) where T : TerrainNode
+        public void PreGenerate<T>(Terrain terrain, int resolution) where T : TerrainNode
         {
             using var nodes = ScopedPooledList<T>.Get();
             foreach (var node in Nodes)
@@ -77,8 +77,6 @@ namespace TerrainGraph
 
                 terrainNode.PreProcess(this);
             }
-
-            nodeCount = nodes.Value.Count;
         }
 
         public void PostGenerate(CommandBuffer command)
@@ -142,13 +140,13 @@ namespace TerrainGraph
 
         public void Generate<T>(Terrain terrain, int resolution, CommandBuffer command) where T : TerrainNode
         {
-            PreGenerate<T>(terrain, resolution, out _);
+            PreGenerate<T>(terrain, resolution);
             PostGenerate(command);
         }
 
-        public ITerrainGraphGraphicsBufferHandle GetGraphicsBuffer(int count, int stride, GraphicsBuffer.Target target)
+        public ITerrainGraphGraphicsBufferHandle GetGraphicsBuffer(int count, int stride, GraphicsBuffer.Target target = GraphicsBuffer.Target.Structured, GraphicsBuffer.UsageFlags usageFlags = GraphicsBuffer.UsageFlags.None)
         {
-            var handle = CreateGraphicsBufferHandle == null ? new DirectGraphicsBufferHandle(count, stride, target) : CreateGraphicsBufferHandle(count, stride, target);
+            var handle = CreateGraphicsBufferHandle == null ? new DirectGraphicsBufferHandle(count, stride, target, usageFlags) : CreateGraphicsBufferHandle(count, stride, target, usageFlags);
             return handle;
         }
     }
