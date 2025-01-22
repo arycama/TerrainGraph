@@ -4,13 +4,46 @@
 
 float3 Scale;
 
+float GetHeight1(int x, int y)
+{
+	uint2 size;
+	Input.GetDimensions(size.x, size.y);
+
+	return tan(0.5 * PI * Input[clamp(int2(x, y), 0, size - 1)].r);
+}
+
+void GetDerivatives1(int2 id, float3 Scale, out float2 d0, out float3 d1)
+{
+	float tl = GetHeight1(id.x - 1, id.y + 1);
+	float t = GetHeight1(id.x + 0, id.y + 1);
+	float tr = GetHeight1(id.x + 1, id.y + 1);
+	float l = GetHeight1(id.x - 1, id.y + 0);
+	float c = GetHeight1(id.x + 0, id.y + 0);
+	float r = GetHeight1(id.x + 1, id.y + 0);
+	float bl = GetHeight1(id.x - 1, id.y - 1);
+	float b = GetHeight1(id.x + 0, id.y - 1);
+	float br = GetHeight1(id.x + 1, id.y - 1);
+
+    //p, q
+	d0.x = (r - l) / (2.0 * Scale.x);
+	d0.y = (t - b) / (2.0 * Scale.z);
+
+    //r, t, s
+	d1.x = (r - 2.0 * c + l) / (Scale.x * Scale.x);
+	d1.y = (t - 2.0 * c + b) / (Scale.z * Scale.z);
+	d1.z = (tr - br - tl + bl) / (4.0 * Scale.x * Scale.z);
+}
+
 [numthreads(8, 8, 1)]
 void Curvature(uint2 id : SV_DispatchThreadID)
 {
 	float2 d0;
 	float3 d1;
-	GetDerivatives(id, Scale, d0, d1);
+	GetDerivatives1(id, Scale, d0, d1);
 
+	Result[id] = length(d0);
+	return;
+	
 	float dx2 = d0.x * d0.x;
 	float dy2 = d0.y * d0.y;
 	float p = dx2 + dy2;

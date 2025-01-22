@@ -15,6 +15,7 @@ namespace TerrainGraph
         [SerializeField, Min(1e-6f)] private float spacing = 10f;
         [SerializeField] private int seed = 0;
         [SerializeField] private bool rotateToTerrain;
+        [SerializeField] private GameObject prefab;
         [SerializeField] private GameObject[] prefabs = Array.Empty<GameObject>();
 
         [Input] private RenderTargetIdentifier input;
